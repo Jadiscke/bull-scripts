@@ -1,16 +1,22 @@
 import fetch from "node-fetch";
+import { Headers } from "node-fetch";
 import "dotenv/config";
 
 const URL = process.env.URL;
-const START_PAGE = process.env.START_PAGE;
-const END_PAGE = process.env.END_PAGE;
+const START_PAGE = Number(process.env.START_PAGE);
+const END_PAGE = Number(process.env.END_PAGE);
+const COOKIE = process.env.COOKIE || '';
 
 console.log('Starting...')
 console.log('Configs: ', URL, ' / ', START_PAGE, ' - ', END_PAGE)
 
+const headers = new Headers({
+  cookie: COOKIE
+})
+
 async function retryJobs(jobsArray) {
   await Promise.all(jobsArray.map( async (jobId)=> {
-    await fetch(`${URL}/api/queues/UseCaseJob/${jobId}/retry`, {method: 'put'})
+    await fetch(`${URL}/api/queues/UseCaseJob/${jobId}/retry`, {method: 'put', headers: headers})
   }))
 }
 
@@ -30,14 +36,13 @@ process.on('uncaughtException', function (exception) {
 
 
 for (let i = START_PAGE; i >= END_PAGE; i--) {
-
   if( i % 100 === 0) {
     console.log(i)
   }
 
   const response = await fetch(
     `${URL}/api/queues?activeQueue=UseCaseJob&status=failed&page=${i}`,
-    { method: "get" }
+    { method: "get", headers: headers }
   )
 
   const jobsIds = (await response.json()).queues[0].jobs.map(element => element.id)
