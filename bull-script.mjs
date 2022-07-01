@@ -5,6 +5,9 @@ const URL = process.env.URL;
 const START_PAGE = process.env.START_PAGE;
 const END_PAGE = process.env.END_PAGE;
 
+console.log('Starting...')
+console.log('Configs: ', URL, ' / ', START_PAGE, ' - ', END_PAGE)
+
 async function retryJobs(jobsArray) {
   await Promise.all(jobsArray.map( async (jobId)=> {
     await fetch(`${URL}/api/queues/UseCaseJob/${jobId}/retry`, {method: 'put'})
