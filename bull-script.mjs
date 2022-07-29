@@ -20,6 +20,13 @@ async function retryJobs(jobsArray) {
   }))
 }
 
+async function cleanJobs(jobsArray) {
+  await Promise.all(jobsArray.map( async (jobId) => {
+    const result = await fetch(`${URL}/api/queues/UseCaseJob/${jobId}/clean`, {method: 'put', headers: headers})
+    console.log(result.statusText)
+  }))
+}
+
 async function wait(waitingTime) {
   await new Promise((resolve, reject) => {
     if ( waitingTime < 0 ){
@@ -41,11 +48,11 @@ for (let i = START_PAGE; i >= END_PAGE; i--) {
   }
 
   const response = await fetch(
-    `${URL}/api/queues?activeQueue=UseCaseJob&status=failed&page=${i}`,
+    `${URL}/api/queues?activeQueue=UseCaseJob&status=completed&page=${i}`,
     { method: "get", headers: headers }
   )
 
   const jobsIds = (await response.json()).queues[0].jobs.map(element => element.id)
-  retryJobs(jobsIds).catch((error) => { console.log(error)})
+  cleanJobs(jobsIds).catch((error) => { console.log(error)})
 
 }
